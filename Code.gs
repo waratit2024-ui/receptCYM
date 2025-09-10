@@ -18,7 +18,7 @@ const ADMIN_SESSION_KEY = 'admin_session';
  * @param {Object} e - Object ที่มีพารามิเตอร์ของ URL
  */
 function doGet(e) {
-  var page = e.parameter.page || "Index"; // กำหนดค่าเริ่มต้นเป็นหน้า index
+  var page = e.parameter.page || "index"; // กำหนดค่าเริ่มต้นเป็นหน้า index
   var template = HtmlService.createTemplateFromFile(page);
 
   return template.evaluate()
