@@ -1,4 +1,0 @@
-# Ignore system files
-.DS_Store
-node_modules/
-.env
