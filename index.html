@@ -2,289 +2,97 @@
 <html>
 <head>
   <base target="_top">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-  <?!= include('css'); ?>
-
+  <title>ระบบคำร้องวัดไชยามาตย์</title>
+  <meta charset="UTF-8">
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
-  <div class="container-layout bg-white shadow-xl rounded-2xl p-6 md:p-10 my-8">
-    <h1 class="text-3xl md:text-4xl font-bold text-center text-gray-800 mb-6">ระบบคำร้องเอกสารลดหย่อนภาษีวัดไชยามาตย์</h1>
-    <p class="text-center text-gray-600 mb-8">กรุณากรอกข้อมูลเพื่อขอรับเอกสาร</p>
-    
-    <form id="documentForm" class="space-y-6">
-      <!-- เลขผู้เสียภาษีอากร/เลขบัตรประชาชน -->
-      <div class="relative w-full max-w-sm">
-        <label for="nationalId" class="block text-sm font-medium text-gray-700">
-          เลขผู้เสียภาษีอากร/เลขบัตรประชาชน <span class="text-red-500">*</span>
-        </label>
-        <input type="text" id="nationalId" name="nationalId"
-              class="mt-1 block w-full pr-10 form-input"
-              maxlength="13" pattern="\d{13}" required
-              placeholder="กรอกหรือกดปุ่มสแกน" />
-        <button type="button" id="scanButton"
-                class="absolute right-2 top-8 text-gray-500 hover:text-indigo-600"
-                style="background:none; border:none; cursor:pointer;">
-          <i class="fa-solid fa-expand"></i> <!-- ใช้ไอคอนกล้อง -->
-        </button>
-      </div>
+<body class="bg-gray-100">
+  <div class="max-w-xl mx-auto bg-white p-6 rounded-xl shadow-md mt-8">
+    <h1 class="text-2xl font-bold mb-4 text-center">แบบฟอร์มคำร้อง</h1>
 
-      <!-- วิดีโอกล้อง + แคนวาสซ่อน -->
-      <div id="scannerArea" class="hidden mt-3">
-        <video id="camera" autoplay playsinline class="w-64 h-40 border rounded"></video>
-        <canvas id="snapshot" class="hidden"></canvas>
-        <div class="mt-2 space-x-2">
-          <button type="button" id="captureButton" class="px-3 py-1 bg-indigo-600 text-white rounded">สแกนเลขบัตร</button>
-          <button type="button" id="stopButton" class="px-3 py-1 bg-gray-500 text-white rounded">ปิดกล้อง</button>
-        </div>
-      </div>
-
-      <!-- ชื่อ - นามสกุล -->
+    <form id="requestForm" class="space-y-4">
       <div>
-        <label for="fullName" class="block text-sm font-medium text-gray-700">ชื่อ - นามสกุล <span class="text-red-500">*</span></label>
-        <input type="text" id="fullName" name="fullName" required class="mt-1 form-input">
+        <label class="block text-sm font-medium">เลขบัตรประชาชน</label>
+        <input type="text" name="nationalId" required class="mt-1 w-full border p-2 rounded">
       </div>
-
-      <!-- เบอร์โทรศัพท์ -->
       <div>
-        <label for="phoneNumber" class="block text-sm font-medium text-gray-700">เบอร์โทรศัพท์ <span class="text-red-500">*</span></label>
-        <input type="tel" id="phoneNumber" name="phoneNumber" required class="mt-1 form-input" pattern="[0-9]{10}">
-        <p class="mt-1 text-xs text-gray-500">กรุณากรอกตัวเลข 10 หลัก</p>
+        <label class="block text-sm font-medium">ชื่อ-นามสกุล</label>
+        <input type="text" name="fullName" required class="mt-1 w-full border p-2 rounded">
       </div>
-
-      <!-- เอกสารที่ต้องการ -->
       <div>
-        <label class="block text-sm font-medium text-gray-700">เอกสารที่ต้องการ <span class="text-red-500">*</span></label>
-        <div class="mt-2 space-y-2">
-          <div class="flex items-center">
-            <input type="checkbox" id="taxCert" name="requiredDocuments" value="ใบลดหย่อนภาษีสรรพากร" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
-            <label for="taxCert" class="ml-2 text-sm text-gray-700">ใบลดหย่อนภาษีสรรพากร
-              <span class="text-red-600">(ข้อมูลจะถูกนำเข้าระบบสรรพกร E-Donation)</span>
-            </label>
-          </div>
-          <div class="flex items-center">
-            <input type="checkbox" id="meritCert" name="requiredDocuments" value="ใบอนุโมทนาบัตรจากทางวัด" class="h-4 w-4 text-indigo-600 border-gray-300 rounded" disabled>
-            <label for="meritCert" class="ml-2 text-sm text-gray-400">ใบอนุโมทนาบัตรจากทางวัด 
-              <span class="text-red-600">(จะยกเลิกใช้ในการลดหย่อนภาษี 1 ม.ค. 68)</span>
-            </label>
-          </div>
-        </div>
+        <label class="block text-sm font-medium">เบอร์โทรศัพท์</label>
+        <input type="text" name="phoneNumber" required class="mt-1 w-full border p-2 rounded">
       </div>
-
-      <!-- ช่องทางการรับเอกสาร -->
       <div>
-        <label class="block text-sm font-medium text-gray-700">ช่องทางการรับเอกสาร <span class="text-red-500">*</span></label>
-        <div class="mt-2 space-y-2">
-          <div class="flex items-center">
-            <input type="radio" id="receiveAtTemple" name="receiveMethod" value="รับที่วัด" required class="h-4 w-4 text-indigo-600 border-gray-300">
-            <label for="receiveAtTemple" class="ml-2 text-sm text-gray-700">รับที่วัด</label>
-          </div>
-          <div class="flex items-center">
-            <input type="radio" id="receiveByEmail" name="receiveMethod" value="รับผ่าน Email" required class="h-4 w-4 text-indigo-600 border-gray-300">
-            <label for="receiveByEmail" class="ml-2 text-sm text-gray-700">รับผ่าน Email</label>
-          </div>
-        </div>
-
-        <!-- ช่องกรอกอีเมล (แสดงเมื่อเลือก รับผ่าน Email) -->
-        <div id="emailField" class="mt-3 hidden">
-          <label for="email" class="block text-sm font-medium text-gray-700">อีเมลสำหรับรับเอกสาร <span class="text-red-500">*</span></label>
-          <input type="email" id="email" name="email" class="mt-1 form-input" placeholder="example@email.com">
-        </div>
+        <label class="block text-sm font-medium">ประเภทเอกสารที่ขอ</label>
+        <select name="requiredDocuments" class="mt-1 w-full border p-2 rounded">
+          <option value="หนังสือรับรองการทำบุญ">หนังสือรับรองการทำบุญ</option>
+          <option value="ใบอนุโมทนาบัตร">ใบอนุโมทนาบัตร</option>
+        </select>
       </div>
-
-      <!-- ประเภทการบริจาค -->
       <div>
-        <label class="block text-sm font-medium text-gray-700">ประเภทการบริจาค <span class="text-red-500">*</span></label>
-        <div class="mt-2 space-y-2">
-          <div class="flex items-center">
-            <input type="radio" id="donationCash" name="donationType" value="เงินสด" required class="h-4 w-4 text-indigo-600 border-gray-300">
-            <label for="donationCash" class="ml-2 text-sm text-gray-700">เงินสด</label>
-          </div>
-          <div class="flex items-center">
-            <input type="radio" id="donationTransfer" name="donationType" value="โอนผ่านธนาคาร" required class="h-4 w-4 text-indigo-600 border-gray-300">
-            <label for="donationTransfer" class="ml-2 text-sm text-gray-700">โอนผ่านธนาคาร</label>
-          </div>
-          <div class="flex items-center">
-            <input type="radio" id="donationAsset" name="donationType" value="ทรัพย์สิน/โรงทาน" required class="h-4 w-4 text-indigo-600 border-gray-300">
-            <label for="donationAsset" class="ml-2 text-sm text-gray-700">ทรัพย์สิน/โรงทาน</label>
-          </div>
-        </div>
+        <label class="block text-sm font-medium">วิธีการรับเอกสาร</label>
+        <select name="receiveMethod" class="mt-1 w-full border p-2 rounded">
+          <option value="รับด้วยตนเอง">รับด้วยตนเอง</option>
+          <option value="รับผ่าน Email">รับผ่าน Email</option>
+        </select>
       </div>
-
-      <!-- มูลค่า (บาท) -->
       <div>
-        <label for="amount" class="block text-sm font-medium text-gray-700">มูลค่า (บาท) <span class="text-red-500">*</span></label>
-        <input type="number" id="amount" name="amount" min="0" required class="mt-1 form-input">
+        <label class="block text-sm font-medium">อีเมล (ถ้ารับผ่าน Email)</label>
+        <input type="email" name="email" class="mt-1 w-full border p-2 rounded">
       </div>
-
-      <!-- อัปโหลดสลิปโอนเงิน -->
-      <div id="slipUploadSection" class="hidden">
-        <label for="slipFile" class="block text-sm font-medium text-gray-700">อัปโหลดสลิปโอนเงิน <span class="text-red-500">*</span></label>
-        <input type="file" id="slipFile" name="slipFile" accept="image/*,.pdf" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100">
-      </div>
-
-      <!-- หมายเหตุ -->
       <div>
-        <label for="note" class="block text-sm font-medium text-gray-700">หมายเหตุ</label>
-        <textarea id="note" name="note" rows="3" class="mt-1 form-textarea"></textarea>
+        <label class="block text-sm font-medium">วิธีการทำบุญ</label>
+        <select name="donationType" class="mt-1 w-full border p-2 rounded">
+          <option value="เงินสด">เงินสด</option>
+          <option value="โอนผ่านธนาคาร">โอนผ่านธนาคาร</option>
+        </select>
       </div>
-
-      <div class="text-center">
-        <button type="submit" class="btn-primary w-full md:w-auto">ส่งคำร้องขอ</button>
+      <div>
+        <label class="block text-sm font-medium">จำนวนเงิน</label>
+        <input type="number" name="amount" required class="mt-1 w-full border p-2 rounded">
       </div>
+      <div>
+        <label class="block text-sm font-medium">แนบสลิป (ถ้าโอน)</label>
+        <input type="file" id="slipFile" class="mt-1 w-full border p-2 rounded">
+      </div>
+      <div>
+        <label class="block text-sm font-medium">หมายเหตุ</label>
+        <textarea name="note" class="mt-1 w-full border p-2 rounded"></textarea>
+      </div>
+      <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">ส่งคำร้อง</button>
     </form>
 
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center hidden">
-      <div class="flex flex-col items-center">
-        <div class="w-12 h-12 border-4 border-white border-solid rounded-full animate-spin border-t-transparent"></div>
-        <p class="mt-4 text-white">กำลังส่งข้อมูล...</p>
-      </div>
-    </div>
+    <div id="result" class="mt-4 text-center font-medium"></div>
   </div>
 
   <script>
-    // --- ช่องทางรับเอกสาร ---
-    const receiveRadios = document.getElementsByName("receiveMethod");
-    const emailField = document.getElementById("emailField");
-    const emailInput = document.getElementById("email");
+    document.getElementById("requestForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const formData = Object.fromEntries(new FormData(form).entries());
 
-    receiveRadios.forEach(radio => {
-      radio.addEventListener("change", (e) => {
-        if (e.target.value === "รับผ่าน Email") {
-          emailField.classList.remove("hidden");
-          emailInput.setAttribute("required", "required");
-        } else {
-          emailField.classList.add("hidden");
-          emailInput.removeAttribute("required");
-          emailInput.value = "";
-        }
-      });
+      // แนบไฟล์สลิปถ้ามี
+      const fileInput = document.getElementById("slipFile");
+      if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        formData.slipFileName = file.name;
+        formData.slipFile = await toBase64(file);
+      }
+
+      google.script.run.withSuccessHandler((res) => {
+        document.getElementById("result").innerText = res.message;
+      }).processUserForm(formData);
     });
 
-    // --- ฟอร์มและสลิป ---
-    document.addEventListener('DOMContentLoaded', () => {
-      const form = document.getElementById('documentForm');
-      const slipUploadSection = document.getElementById('slipUploadSection');
-      const slipFile = document.getElementById('slipFile');
-      const loadingOverlay = document.getElementById('loadingOverlay');
-
-      document.getElementsByName('donationType').forEach(radio => {
-        radio.addEventListener('change', (event) => {
-          if (event.target.value === 'โอนผ่านธนาคาร') {
-            slipUploadSection.classList.remove('hidden');
-            slipFile.setAttribute('required', 'required');
-          } else {
-            slipUploadSection.classList.add('hidden');
-            slipFile.removeAttribute('required');
-          }
-        });
+    function toBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = (err) => reject(err);
       });
-
-      form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const requiredDocs = document.querySelectorAll('input[name="requiredDocuments"]:checked');
-        if (requiredDocs.length === 0) {
-          alert('กรุณาเลือกเอกสารที่ต้องการอย่างน้อย 1 รายการ');
-          return;
-        }
-        loadingOverlay.classList.remove('hidden');
-
-        const formData = new FormData(form);
-        const data = {};
-        formData.forEach((value, key) => {
-          if (key !== 'slipFile') {
-            if (key === 'requiredDocuments') {
-              if (!data[key]) data[key] = [];
-              data[key].push(value);
-            } else data[key] = value;
-          }
-        });
-
-        const file = formData.get('slipFile');
-        if (file && file.size > 0) {
-          const reader = new FileReader();
-          reader.onload = function(event) {
-            data.slipFile = event.target.result;
-            data.slipFileName = file.name;
-            google.script.run
-              .withSuccessHandler(onSuccess)
-              .withFailureHandler(onError)
-              .processUserForm(data);
-          };
-          reader.readAsDataURL(file);
-        } else {
-          data.slipFile = null;
-          google.script.run
-            .withSuccessHandler(onSuccess)
-            .withFailureHandler(onError)
-            .processUserForm(data);
-        }
-      });
-
-      function onSuccess(response) {
-        loadingOverlay.classList.add('hidden');
-        if (response.status === 'success') {
-          alert(response.message);
-          form.reset();
-        } else {
-          alert(response.message);
-        }
-      }
-
-      function onError(error) {
-        loadingOverlay.classList.add('hidden');
-        alert('เกิดข้อผิดพลาด: ' + error.message);
-      }
-
-      // --- กล้องสแกน ---
-      let stream;
-      const scanButton = document.getElementById('scanButton');
-      const captureButton = document.getElementById('captureButton');
-      const stopButton = document.getElementById('stopButton');
-
-      scanButton.addEventListener('click', async () => {
-        document.getElementById("scannerArea").classList.remove("hidden");
-        try {
-          stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-          document.getElementById("camera").srcObject = stream;
-        } catch (err) {
-          alert("ไม่สามารถเปิดกล้องได้: " + err.message);
-        }
-      });
-
-      captureButton.addEventListener('click', async () => {
-        const video = document.getElementById("camera");
-        const canvas = document.getElementById("snapshot");
-        const ctx = canvas.getContext("2d");
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-        const { data: { text } } = await Tesseract.recognize(canvas, 'eng+tha');
-        const match = text.replace(/\s/g, '').match(/\d{13}/);
-        if (match) {
-          document.getElementById("nationalId").value = match[0];
-          stopCamera();
-        } else {
-          alert("ไม่พบเลขบัตร 13 หลัก ลองใหม่ครับ");
-        }
-      });
-
-      stopButton.addEventListener('click', stopCamera);
-
-      function stopCamera() {
-        if (stream) {
-          stream.getTracks().forEach(track => track.stop());
-          stream = null;
-        }
-        document.getElementById("scannerArea").classList.add("hidden");
-      }
-    });
+    }
   </script>
 </body>
 </html>
