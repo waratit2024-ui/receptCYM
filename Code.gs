@@ -1,21 +1,19 @@
 /**
- * @fileoverview Code.gs
- * ไฟล์หลักสำหรับ Server-side ในระบบคำร้องขอเอกสารวัดไชยามาตย์
+ * ระบบคำร้องขอเอกสารวัดไชยามาตย์
+ * เวอร์ชันรวม Code.gs + index.html
  */
 
-const SHEET_ID = PropertiesService.getScriptProperties().getProperty('SHEET_ID');
-const SHEET_NAME = PropertiesService.getScriptProperties().getProperty('SHEET_NAME') || 'Sheet1';
-const DRIVE_ID = PropertiesService.getScriptProperties().getProperty('DRIVE_ID');
-const ADMIN_PASSWORD = PropertiesService.getScriptProperties().getProperty('ADMIN_PASSWORD');
-const ADMIN_SESSION_KEY = 'admin_session';
+// ตั้งค่าให้ตรงกับระบบของคุณ
+const SHEET_ID = '11SsgEH0nritEA9Fz6KhcNGJUGNUFCilAdhLJT0AIi60';   // <-- ใส่ Google Sheet ID
+const SHEET_NAME = 'Sheet1';             // <-- ใส่ชื่อชีต
+const DRIVE_ID = '1cb4sS34wqGXeHwKBG-gIH5m1aXdrwVqA';   // <-- ใส่โฟลเดอร์ไอดี Google Drive
+const ADMIN_PASSWORD = '13263162';       // <-- ตั้งรหัสผ่านแอดมิน
 
 /** ======================= doGet ======================= */
-function doGet(e) {
-  var page = e.parameter.page || "index"; 
-  var template = HtmlService.createTemplateFromFile(page);
-
-  return template.evaluate()
-    .setSandboxMode(HtmlService.SandboxMode.IFRAME)
+function doGet() {
+  return HtmlService.createTemplateFromFile('index')
+    .evaluate()
+    .setTitle("ระบบคำร้องวัดไชยามาตย์")
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
 
@@ -25,13 +23,13 @@ function processUserForm(formData) {
     const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(SHEET_NAME);
     let slipUrl = '';
 
-    // Upload slip if provided
+    // Upload slip ถ้ามีแนบมา
     if (formData.donationType === 'โอนผ่านธนาคาร' && formData.slipFile) {
       const match = String(formData.slipFile).match(/^data:([^;]+);base64,(.+)$/);
-      if (!match) throw new Error('รูปแบบสลิปไม่ถูกต้อง');
+      if (!match) throw new Error('ไฟล์สลิปไม่ถูกต้อง');
 
       const mime = match[1];
-      const b64  = match[2];
+      const b64 = match[2];
       const bytes = Utilities.base64Decode(b64);
       const name = formData.slipFileName || ('slip_' + Date.now());
       const blob = Utilities.newBlob(bytes, mime, name);
@@ -41,15 +39,12 @@ function processUserForm(formData) {
       slipUrl = file.getUrl();
     }
 
-    const requiredDocuments = Array.isArray(formData.requiredDocuments) 
+    const requiredDocuments = Array.isArray(formData.requiredDocuments)
       ? formData.requiredDocuments.join(', ')
       : formData.requiredDocuments;
 
-    if (formData.receiveMethod === 'รับผ่าน Email' && !formData.email) {
-      throw new Error('กรุณาระบุอีเมลสำหรับการรับเอกสาร');
-    }
-
     const timestamp = formatThaiDate(new Date());
+
     const rowData = [
       timestamp,
       formData.nationalId,
@@ -65,70 +60,15 @@ function processUserForm(formData) {
       '',
       ''
     ];
+
     sheet.appendRow(rowData);
 
-    // Send email to admin
-    MailApp.sendEmail({
-      to: "nawaratk65@gmail.com",
-      subject: "📩 มีคำร้องใหม่จากระบบคำร้องขอเอกสาร",
-      htmlBody: `<p>มีคำร้องใหม่จาก ${formData.fullName}</p>`
-    });
-
-    // Send confirmation to user
-    if (formData.receiveMethod === 'รับผ่าน Email' && formData.email) {
-      MailApp.sendEmail({
-        to: formData.email,
-        subject: "วัดไชยามาตย์: รับคำร้องของท่านแล้ว",
-        htmlBody: `<p>เรียนคุณ ${formData.fullName} ระบบได้รับคำร้องแล้ว</p>`,
-        replyTo: "chaiyamartta@gmail.com",
-        name: "วัดไชยามาตย์"
-      });
-    }
-
-    return { status: 'success', message: 'ส่งคำร้องเรียบร้อยแล้ว' };
+    return { status: 'success', message: 'ส่งคำร้องเรียบร้อยแล้ว ✅' };
 
   } catch (error) {
     Logger.log(error);
     return { status: 'error', message: 'เกิดข้อผิดพลาด: ' + error.message };
   }
-}
-
-/** ======================= Admin ======================= */
-function loginAdmin(password) {
-  if (password === ADMIN_PASSWORD) {
-    PropertiesService.getUserProperties().setProperty(ADMIN_SESSION_KEY, ADMIN_PASSWORD);
-    return true;
-  }
-  return false;
-}
-function isAdminSessionActive_() {
-  return PropertiesService.getUserProperties().getProperty(ADMIN_SESSION_KEY) === ADMIN_PASSWORD;
-}
-function assertAdmin_() {
-  if (!isAdminSessionActive_()) throw new Error('Unauthorized');
-}
-function logoutAdmin() {
-  PropertiesService.getUserProperties().deleteProperty(ADMIN_SESSION_KEY);
-  return true;
-}
-function getRequests() {
-  assertAdmin_();
-  return SpreadsheetApp.openById(SHEET_ID).getSheetByName(SHEET_NAME).getDataRange().getValues();
-}
-function updateRequest(rowIndex, taxUrl, meritUrl) {
-  assertAdmin_();
-  const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(SHEET_NAME);
-  sheet.getRange(rowIndex + 1, 10, 1, 2).setValues([[taxUrl, meritUrl]]);
-}
-function deleteRequest(rowIndex) {
-  assertAdmin_();
-  SpreadsheetApp.openById(SHEET_ID).getSheetByName(SHEET_NAME).deleteRow(rowIndex + 1);
-}
-function searchUser(nationalId) {
-  const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(SHEET_NAME);
-  const values = sheet.getDataRange().getValues();
-  values.shift();
-  return values.filter(row => row[1] == nationalId);
 }
 
 /** ======================= Utils ======================= */
